@@ -6,43 +6,26 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/julienschmidt/httprouter"
 	"temidee_lets_go.temideewan.net/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		app.notFound(w)
-		return
-	}
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
-	// files := []string{
-	// 	"./ui/html/base.tmpl",
-	// 	"./ui/html/partials/nav.tmpl",
-	// 	"./ui/html/pages/home.tmpl",
-	// }
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
-	// data := &templateData{
-	// 	Snippets: snippets,
-	// }
-	// err = ts.ExecuteTemplate(w, "base", data)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
 	data := app.newTemplateData(r)
 	data.Snippets = snippets
 	app.render(w, http.StatusOK, "home.tmpl", data)
 }
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	// we can get the request params from the request context
+	// automatically added by our http router
+	params := httprouter.ParamsFromContext(r.Context())
+	// id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -75,12 +58,11 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// err = ts.ExecuteTemplate(w, "base", data)
 	// fmt.Fprintf(w, "%+v", snippet)
 }
-func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
+func (app *application) snippetCreate(w http.ResponseWriter, r * http.Request) {
+	w.Write([]byte("Display the form for creating a new snippet..."))
+}
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+
 	title := "o Snail"
 	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n–Kobayashi Issa"
 	expires := 7
@@ -94,5 +76,5 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
