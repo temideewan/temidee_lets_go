@@ -1,9 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
+
+	"github.com/go-playground/form/v4"
 )
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
@@ -39,4 +42,29 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	if err != nil {
 		app.serverError(w, err)
 	}
+}
+
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+	// parse the form as we'd usually do
+	err := r.ParseForm()
+	if err != nil {
+		// return any errors immediately
+		return err
+	}
+
+	// try to decode the form based on the structure passed in
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		var invalidDecodeError *form.InvalidDecoderError
+
+		// If we try to use an invalid target destination, the Decode() method
+		// // will return an error with the type *form.InvalidDecoderError.We use
+		// errors.As() to check for this and raise a panic rather than returning the error.
+		if errors.As(err, &invalidDecodeError) {
+			panic(err)
+		}
+		// return other errors
+		return err
+	}
+	return nil
 }
