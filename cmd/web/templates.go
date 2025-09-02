@@ -14,6 +14,7 @@ type templateData struct {
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
 	Form any
+	Flash string
 }
 
 func humanDate(t time.Time) string {
@@ -59,5 +60,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
+		// add flash message to the template data if it exists
+		Flash: app.sessionManager.PopString(r.Context(), "flash"),
 	}
 }

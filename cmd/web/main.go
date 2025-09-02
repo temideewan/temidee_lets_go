@@ -7,7 +7,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/lib/pq"
 	"temidee_lets_go.temideewan.net/internal/models"
@@ -19,6 +22,7 @@ type application struct {
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
 	formDecoder *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -42,6 +46,12 @@ func main() {
 		errorLog.Fatal(err)
 	}
 	formDecoder := form.NewDecoder()
+
+	// scs.New() for managing application sessions.
+	// configured to use postgres store with lifetime of 12 hours
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(db)
+	sessionManager.Lifetime = time.Hour * 12
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
@@ -50,6 +60,7 @@ func main() {
 		},
 		templateCache: templateCache,
 		formDecoder: formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	srv := &http.Server{
