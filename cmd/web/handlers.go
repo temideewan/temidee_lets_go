@@ -18,6 +18,19 @@ type snippetCreateForm struct {
 	validator.Validator `form:"-"`
 }
 
+type userSignUpForm struct {
+	Name                string `form:"name"`
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
+type userLoginForm struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
@@ -90,20 +103,13 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
-type UserSignUpForm struct {
-	Name                string `form:"name"`
-	Email               string `form:"email"`
-	Password            string `form:"password"`
-	validator.Validator `form:"-"`
-}
-
 func (app *application) userSignUp(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
-	data.Form = UserSignUpForm{}
+	data.Form = userSignUpForm{}
 	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 func (app *application) userSignUpPost(w http.ResponseWriter, r *http.Request) {
-	var form UserSignUpForm
+	var form userSignUpForm
 
 	err := app.decodePostForm(r, &form)
 	if err != nil {
@@ -135,7 +141,9 @@ func (app *application) userSignUpPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Get the form for logging in a user...")
+	data := app.newTemplateData(r)
+	data.Form = userLoginForm{}
+	app.render(w, http.StatusOK, "login.tmpl", data)
 }
 func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Login a user...")
