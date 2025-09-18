@@ -2,7 +2,12 @@ package models
 
 import (
 	"database/sql"
+	"errors"
+	"strings"
 	"time"
+
+	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -18,8 +23,24 @@ type UserModel struct {
 }
 
 // We'll use the Insert method to add a new record to the "users" table.
-func (u *UserModel) Insert(name, email, password string) error {
-	// TODO: implement the insert
+func (m *UserModel) Insert(name, email, password string) error {
+	// create a bcrypt hash of the plain-text password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return err
+	}
+	stmt := `INSERT INTO users (name, email, hashed_password, created) VALUES($1,$2,$3, current_timestamp)`
+
+	_, err = m.DB.Exec(stmt, name, email, string(hashedPassword))
+	if err != nil {
+		var pqError *pq.Error
+		if errors.As(err, &pqError) {
+			if pqError.Code.Name() == "unique_violation" && strings.Contains(pqError.Message, "user_uc_email") {
+				return ErrDuplicateEmail
+			}
+		}
+		return err
+	}
 	return nil
 }
 
@@ -29,7 +50,6 @@ func (u *UserModel) Insert(name, email, password string) error {
 func (u *UserModel) Authenticate(email, password string) (int, error) {
 	return 0, nil
 }
-
 
 // exists will return a boolean if the user exists
 func (u *UserModel) Exists(id int) (bool, error) {
