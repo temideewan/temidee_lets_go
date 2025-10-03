@@ -58,7 +58,7 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 		var invalidDecodeError *form.InvalidDecoderError
 
 		// If we try to use an invalid target destination, the Decode() method
-		// // will return an error with the type *form.InvalidDecoderError.We use
+		// will return an error with the type *form.InvalidDecoderError.We use
 		// errors.As() to check for this and raise a panic rather than returning the error.
 		if errors.As(err, &invalidDecodeError) {
 			panic(err)
@@ -67,4 +67,8 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 		return err
 	}
 	return nil
+}
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	return app.sessionManager.Exists(r.Context(), string(AuthenticatedUserId))
 }
