@@ -30,7 +30,7 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	// helper method that we made earlier and return
 	ts, ok := app.templateCache[page]
 	if !ok {
-		err := fmt.Errorf("The template %s does not exist", page)
+		err := fmt.Errorf("the template %s does not exist", page)
 		app.serverError(w, err)
 		return
 	}
@@ -70,5 +70,9 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 }
 
 func (app *application) isAuthenticated(r *http.Request) bool {
-	return app.sessionManager.Exists(r.Context(), string(AuthenticatedUserId))
+	isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
+	if !ok {
+		return false
+	}
+	return isAuthenticated
 }

@@ -33,7 +33,7 @@ type userLoginForm struct {
 
 type authenticatedUserID string
 
-const AuthenticatedUserId authenticatedUserID = "authenticatedUserId"
+const AuthenticatedUserID = authenticatedUserID("authenticatedUserID")
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
@@ -186,7 +186,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	app.sessionManager.Put(r.Context(), string(AuthenticatedUserId), id)
+	app.sessionManager.Put(r.Context(), string(AuthenticatedUserID), id)
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
@@ -195,7 +195,7 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	app.sessionManager.Remove(r.Context(), string(AuthenticatedUserId))
+	app.sessionManager.Remove(r.Context(), string(AuthenticatedUserID))
 
 	app.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
 	http.Redirect(w, r, "/", http.StatusSeeOther)

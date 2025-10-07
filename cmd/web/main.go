@@ -71,7 +71,7 @@ func main() {
 	}
 
 	tlsConfig := &tls.Config{
-		MinVersion:       tls.VersionTLS13,
+		MinVersion:       tls.VersionTLS13, // this ensures tls 1.3 support that automatically protects against CSRF attack
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
 
