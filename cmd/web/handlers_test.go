@@ -10,7 +10,7 @@ import (
 	"temidee_lets_go.temideewan.net/internal/assert"
 )
 
-func TestPing(t *testing.T) {
+func TestPing1(t *testing.T) {
 	// initialize a new httptest.ResponseRecorder
 	rr := httptest.NewRecorder()
 
@@ -37,4 +37,16 @@ func TestPing(t *testing.T) {
 	bytes.TrimSpace(body)
 
 	assert.Equal(t, string(body), "OK")
+}
+
+func TestPing(t *testing.T) {
+	app := newTestApplication(t)
+
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	code, _, body := ts.get(t, "/ping")
+
+	assert.Equal(t, code, http.StatusOK)
+	assert.Equal(t, body, "OK")
 }
