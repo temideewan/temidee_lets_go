@@ -36,7 +36,7 @@ type authenticatedUserID string
 const AuthenticatedUserID = authenticatedUserID("authenticatedUserID")
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	snippets, err := app.snippets.Latest()
+	snippets, err := app.models.Snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -55,7 +55,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
-	snippet, err := app.snippets.Get(id)
+	snippet, err := app.models.Snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
@@ -98,7 +98,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
 	}
-	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
+	id, err := app.models.Snippets.Insert(form.Title, form.Content, form.Expires)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -129,7 +129,7 @@ func (app *application) userSignUpPost(w http.ResponseWriter, r *http.Request) {
 		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
 		return
 	}
-	err = app.users.Insert(form.Name, form.Email, form.Password)
+	err = app.models.Users.Insert(form.Name, form.Email, form.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicateEmail) {
 			form.AddFieldError("email", "Email address is already in use")
@@ -167,7 +167,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
 		return
 	}
-	id, err := app.users.Authenticate(form.Email, form.Password)
+	id, err := app.models.Users.Authenticate(form.Email, form.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
 			form.AddNonFieldError("Email or password is incorrect")

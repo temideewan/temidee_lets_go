@@ -20,8 +20,7 @@ import (
 type application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger
-	snippets       *models.SnippetModel
-	users          *models.UserModel
+	models         *models.ContainerModel
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
@@ -56,15 +55,11 @@ func main() {
 	sessionManager.Lifetime = time.Hour * 12
 
 	sessionManager.Cookie.Secure = true
+	container := models.NewContainerModel(db)
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &models.SnippetModel{
-			DB: db,
-		},
-		users: &models.UserModel{
-			DB: db,
-		},
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		models:         &container,
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,

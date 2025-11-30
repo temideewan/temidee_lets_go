@@ -19,7 +19,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		exists, err := app.users.Exists(id)
+		exists, err := app.models.Users.Exists(id)
 		if err != nil {
 			app.serverError(w, err)
 			return
